@@ -16,7 +16,7 @@ const dbConfig = {
   server: process.env.DB_SERVER, // e.g., 'localhost'
   database: process.env.DB_NAME,
   options: {
-    encrypt: true, // For Azure SQL, otherwise set to false
+    trustServerCertificate: true,
     enableArithAbort: true,
   },
 };
