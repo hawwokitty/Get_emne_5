@@ -42,6 +42,7 @@ app.get("/api/users/:id/countries_visited", async (req, res) => {
   }
 });
 
+// POST endpoint
 app.post("/api/users/:id/countries_visited", async (req, res) => {
   const { id } = req.params;
   const { country_id } = req.body;
@@ -49,10 +50,30 @@ app.post("/api/users/:id/countries_visited", async (req, res) => {
     const result = await sql.query(
       `INSERT INTO countries_visited (user_id, country_id) VALUES (${id}, ${country_id})`
     );
-    res.status(201).send("Country added to visited list");
+    res.status(201).json({ message: "Country added to visited list" }); // Return JSON response
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error adding visited country");
+    res.status(500).json({ error: "Error adding visited country" }); // Return JSON response
+  }
+});
+
+// DELETE endpoint
+app.delete("/api/users/:id/countries_visited", async (req, res) => {
+  const { id } = req.params;
+  const { country_id } = req.body;
+  try {
+    const result = await sql.query(
+      `DELETE FROM countries_visited WHERE user_id = ${id} AND country_id = ${country_id}`
+    );
+    
+    if (result.rowCount === 0) {
+      res.status(404).json({ error: "Country not found in visited list" }); // Return JSON response
+    } else {
+      res.status(200).json({ message: "Country removed from visited list" }); // Return JSON response
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error removing visited country" }); // Return JSON response
   }
 });
 
