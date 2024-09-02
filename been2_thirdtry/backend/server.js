@@ -13,7 +13,7 @@ app.use(cors());
 const dbConfig = {
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  server: process.env.DB_SERVER, // e.g., 'localhost'
+  server: process.env.DB_SERVER,
   database: process.env.DB_NAME,
   options: {
     trustServerCertificate: true,
@@ -29,11 +29,11 @@ sql.connect(dbConfig)
   .catch((err) => console.error("Database connection failed", err));
 
 // Define routes
-app.get("/api/users/:id/visited-countries", async (req, res) => {
+app.get("/api/users/:id/countries_visited", async (req, res) => {
   const { id } = req.params;
   try {
     const result = await sql.query(
-      `SELECT * FROM visited_countries WHERE user_id = ${id}`
+      `SELECT * FROM countries_visited WHERE user_id = ${id}`
     );
     res.json(result.recordset);
   } catch (err) {
@@ -42,12 +42,12 @@ app.get("/api/users/:id/visited-countries", async (req, res) => {
   }
 });
 
-app.post("/api/users/:id/visited-countries", async (req, res) => {
+app.post("/api/users/:id/countries_visited", async (req, res) => {
   const { id } = req.params;
   const { country_id } = req.body;
   try {
     const result = await sql.query(
-      `INSERT INTO visited_countries (user_id, country_id) VALUES (${id}, ${country_id})`
+      `INSERT INTO countries_visited (user_id, country_id) VALUES (${id}, ${country_id})`
     );
     res.status(201).send("Country added to visited list");
   } catch (err) {
