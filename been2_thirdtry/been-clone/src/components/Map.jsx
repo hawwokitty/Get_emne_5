@@ -40,7 +40,7 @@ const Map = () => {
 
   // Fetching world GeoJSON data
   useEffect(() => {
-    fetch("/world.geo.json")
+    fetch("/world_countries_geojson.json")
       .then((response) => response.json())
       .then((data) => setCountryData(data))
       .catch((error) => console.error("Error fetching country data:", error));
@@ -54,11 +54,11 @@ const Map = () => {
         if (data.length > 0) {
           const arrayOfVisitedCountries = data.map((country) => {
             const countryName = lookupName.byIso(country.country_id).country;
-            const countryIso = lookupName.byIso(country.country_id).iso2;
+            const countryIso = lookupName.byIso(country.country_id).iso3;
             const countryGeoJson =
               countryData && countryData.features
                 ? countryData.features.find(
-                    (feature) => feature.properties.iso_a2_eh === countryIso
+                    (feature) => feature.properties.su_a3 === countryIso
                   )
                 : null;
             return {
@@ -81,13 +81,15 @@ const Map = () => {
     fetchVisitedCountries();
   }, [fetchVisitedCountries]); 
 
+  // console.log(highlightedCountries);
+  
 
   const handleCountryClick = (countryName) => {
-    const countryIso = lookupName.byCountry(countryName).iso2;
+    const countryIso = lookupName.byCountry(countryName).iso3;
     const countryGeoJson =
       countryData && countryData.features
         ? countryData.features.find(
-            (feature) => feature.properties.iso_a2_eh === countryIso
+            (feature) => feature.properties.su_a3 === countryIso
           )
         : null;
     const newCountry = {
