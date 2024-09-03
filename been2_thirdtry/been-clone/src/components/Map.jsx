@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { MapContainer, TileLayer, GeoJSON, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import * as geoJsonImport from "world-geojson";
+// import * as geoJsonImport from "world-geojson";
 import * as lookup from "coordinate_to_country";
 import * as lookupName from "country-code-lookup";
 
@@ -24,33 +24,46 @@ const MapEvents = ({ onCountryClick }) => {
 };
 
 const getCountryNameFromCoordinates = (lat, lng) => {
-  // console.log(lookup(lat, lng)[0]);
   const countryISO = lookup(lat, lng)[0];
 
   if (countryISO) {
     const countryNameLookedUp = lookupName.byIso(countryISO).country;
-    // console.log(countryNameLookedUp);
     return countryNameLookedUp;
   } else {
     console.log("That's not a country!");
-    
   }
 };
 
 const Map = () => {
+  const [countryData, setCountryData] = useState(null);
   const [highlightedCountries, setHighlightedCountries] = useState([]);
 
-  // Fetch visited countries when the component mounts
-  const fetchVisitedCountries = () => {
+  // Fetching world GeoJSON data
+  useEffect(() => {
+    fetch("/world.geo.json")
+      .then((response) => response.json())
+      .then((data) => setCountryData(data))
+      .catch((error) => console.error("Error fetching country data:", error));
+  }, []);
+
+  // Fetch visited countries
+  const fetchVisitedCountries = useCallback(() => {
     fetch("http://localhost:3111/api/users/1/countries_visited")
       .then((response) => response.json())
       .then((data) => {
         if (data.length > 0) {
           const arrayOfVisitedCountries = data.map((country) => {
             const countryName = lookupName.byIso(country.country_id).country;
+            const countryIso = lookupName.byIso(country.country_id).iso2;
+            const countryGeoJson =
+              countryData && countryData.features
+                ? countryData.features.find(
+                    (feature) => feature.properties.iso_a2_eh === countryIso
+                  )
+                : null;
             return {
               id: country.country_id,
-              geojson: geoJsonImport.forCountry(countryName),
+              geojson: countryGeoJson,
               name: countryName,
             };
           });
@@ -61,29 +74,37 @@ const Map = () => {
         }
       })
       .catch((error) => console.error("Error fetching countries:", error));
-  };
+  }, [countryData]); // Add countryData as a dependency since it is used inside
 
   // Initial fetch of visited countries
   useEffect(() => {
     fetchVisitedCountries();
-  }, []);
+  }, [fetchVisitedCountries]); 
+
 
   const handleCountryClick = (countryName) => {
+    const countryIso = lookupName.byCountry(countryName).iso2;
+    const countryGeoJson =
+      countryData && countryData.features
+        ? countryData.features.find(
+            (feature) => feature.properties.iso_a2_eh === countryIso
+          )
+        : null;
     const newCountry = {
       id: lookupName.byCountry(countryName).isoNo,
-      geojson: geoJsonImport.forCountry(countryName),
+      geojson: countryGeoJson,
       name: countryName,
     };
-  
+
     // Check if the country is already highlighted
     const existingCountry = highlightedCountries.find(
       (country) => country.id === Number(newCountry.id)
     );
-  
+
     // If the country exists, perform a DELETE request
     if (existingCountry) {
       console.log(countryName, " already exists, let's delete it");
-  
+
       fetch("http://localhost:3111/api/users/1/countries_visited", {
         method: "DELETE",
         headers: {
@@ -108,7 +129,7 @@ const Map = () => {
     } else {
       // If the country does not exist, perform a POST request
       console.log("Add ", countryName, "to API with POST");
-  
+
       fetch("http://localhost:3111/api/users/1/countries_visited", {
         method: "POST",
         headers: {
@@ -132,8 +153,7 @@ const Map = () => {
         .catch((error) => console.error("Add error:", error));
     }
   };
-  
-  
+
   return (
     <MapContainer
       center={[20, 0]}
@@ -145,9 +165,9 @@ const Map = () => {
         attribution='&copy; <a href="https://carto.com/">CartoDB</a> contributors'
       />
       <MapEvents onCountryClick={handleCountryClick} />
-      {highlightedCountries.map((data, index) => (
-        <GeoJSON key={index} data={data.geojson} />
-      ))}
+      {highlightedCountries.map((data, index) =>
+        data.geojson ? <GeoJSON key={index} data={data.geojson} /> : null
+      )}
     </MapContainer>
   );
 };
