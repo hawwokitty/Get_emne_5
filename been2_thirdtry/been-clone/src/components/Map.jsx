@@ -24,12 +24,17 @@ const MapEvents = ({ onCountryClick }) => {
 };
 
 const getCountryNameFromCoordinates = (lat, lng) => {
-  console.log(lookup(lat, lng)[0]);
+  // console.log(lookup(lat, lng)[0]);
   const countryISO = lookup(lat, lng)[0];
 
-  const countryNameLookedUp = lookupName.byIso(countryISO).country;
-  console.log(countryNameLookedUp);
-  return countryNameLookedUp;
+  if (countryISO) {
+    const countryNameLookedUp = lookupName.byIso(countryISO).country;
+    // console.log(countryNameLookedUp);
+    return countryNameLookedUp;
+  } else {
+    console.log("That's not a country!");
+    
+  }
 };
 
 const Map = () => {
@@ -69,64 +74,66 @@ const Map = () => {
       geojson: geoJsonImport.forCountry(countryName),
       name: countryName,
     };
-
-    setHighlightedCountries((prevCountries) => {
-      const existingCountry = prevCountries.find(
-        (country) => country.id === Number(newCountry.id)
-      );
-
-      if (existingCountry) {
-        console.log(countryName, " already exists, let's delete it");
-        // Send DELETE request to the API
-        fetch("http://localhost:3111/api/users/1/countries_visited", {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ id: 1, country_id: newCountry.id }),
+  
+    // Check if the country is already highlighted
+    const existingCountry = highlightedCountries.find(
+      (country) => country.id === Number(newCountry.id)
+    );
+  
+    // If the country exists, perform a DELETE request
+    if (existingCountry) {
+      console.log(countryName, " already exists, let's delete it");
+  
+      fetch("http://localhost:3111/api/users/1/countries_visited", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: 1, country_id: newCountry.id }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            return response.text().then((text) => {
+              throw new Error(text);
+            });
+          }
+          return response.json();
         })
-          .then((response) => {
-            if (!response.ok) {
-              return response.text().then((text) => {
-                throw new Error(text);
-              });
-            }
-            return response.json();
-          })
-          .then((data) => {
-            console.log("Delete response:", data);
-            // Refresh the state after successful deletion
-            fetchVisitedCountries();
-          })
-          .catch((error) => console.error("Delete error:", error));
-      } else {
-        console.log("Add ", countryName, "to API with POST");
-        // Send POST request to the API
-        fetch("http://localhost:3111/api/users/1/countries_visited", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ id: 1, country_id: newCountry.id }),
+        .then((data) => {
+          console.log("Delete response:", data);
+          // Re-fetch the list of visited countries to update the state correctly
+          fetchVisitedCountries();
         })
-          .then((response) => {
-            if (!response.ok) {
-              return response.text().then((text) => {
-                throw new Error(text);
-              });
-            }
-            return response.json();
-          })
-          .then((data) => {
-            console.log("Add response:", data);
-            // Refresh the state after successful addition
-            fetchVisitedCountries();
-          })
-          .catch((error) => console.error("Add error:", error));
-      }
-      return prevCountries; // Maintain the current state temporarily
-    });
+        .catch((error) => console.error("Delete error:", error));
+    } else {
+      // If the country does not exist, perform a POST request
+      console.log("Add ", countryName, "to API with POST");
+  
+      fetch("http://localhost:3111/api/users/1/countries_visited", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: 1, country_id: newCountry.id }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            return response.text().then((text) => {
+              throw new Error(text);
+            });
+          }
+          return response.json();
+        })
+        .then((data) => {
+          console.log("Add response:", data);
+          // Re-fetch the list of visited countries to update the state correctly
+          fetchVisitedCountries();
+        })
+        .catch((error) => console.error("Add error:", error));
+    }
   };
+  
+  
   return (
     <MapContainer
       center={[20, 0]}
