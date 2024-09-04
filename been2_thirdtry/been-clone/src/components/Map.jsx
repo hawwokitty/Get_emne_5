@@ -167,8 +167,8 @@ const Map = () => {
         attribution='&copy; <a href="https://carto.com/">CartoDB</a> contributors'
       />
       <MapEvents onCountryClick={handleCountryClick} />
-      {highlightedCountries.map((data, index) =>
-        data.geojson ? <GeoJSON key={index} data={data.geojson} /> : null
+      {highlightedCountries.map((data) =>
+        data.geojson ? <GeoJSON key={data.id} data={data.geojson} /> : null
       )}
     </MapContainer>
   );
