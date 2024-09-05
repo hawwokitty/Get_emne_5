@@ -31,7 +31,6 @@ export default function Signup() {
         // Handle successful signup
         setMessage("Signup successful! You can now log in.");
         console.log("Signup successful:", data);
-        // Optionally, redirect the user or clear the form
       } else {
         // Handle errors (e.g., user already exists)
         setMessage(data.error || "Error during signup.");
