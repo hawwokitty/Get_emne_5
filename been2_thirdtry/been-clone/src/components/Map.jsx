@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, GeoJSON, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import * as lookup from "coordinate_to_country";
 import * as lookupName from "country-code-lookup";
-import { useAuth } from '../context/AuthContext'; // Ensure this hook is correctly implemented
+import { useAuth } from '../context/AuthContext'; 
 
 const MapEvents = ({ onCountryClick }) => {
   useMapEvents({

@@ -1,6 +1,6 @@
 // Login.jsx
 import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext'; // Import the useAuth hook
+import { useAuth } from '../../context/AuthContext'; 
 
 export default function Login() {
   const [email, setEmail] = useState('');
