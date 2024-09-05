@@ -2,7 +2,6 @@ import React from "react";
 import { useState } from "react";
 
 export default function Signup() {
-  // State to manage email and password inputs
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState(""); // State to manage feedback messages
@@ -30,16 +29,16 @@ export default function Signup() {
       if (response.ok) {
         // Handle successful signup
         setMessage("Signup successful! You can now log in.");
-        console.log("Signup successful:", data);
+        // console.log("Signup successful:", data);
       } else {
         // Handle errors (e.g., user already exists)
         setMessage(data.error || "Error during signup.");
-        console.error("Signup error:", data.error);
+        // console.error("Signup error:", data.error);
       }
     } catch (error) {
       // Handle unexpected errors (e.g., network issues)
       setMessage("An error occurred during signup. Please try again later.");
-      console.error("Fetch error:", error);
+      // console.error("Fetch error:", error);
     }
   };
 

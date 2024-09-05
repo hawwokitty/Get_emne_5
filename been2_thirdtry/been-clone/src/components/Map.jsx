@@ -38,12 +38,11 @@ const Map = () => {
     logout(); // Call the logout function to clear user data
     window.location.href = '/login'; // Redirect to the login page or home page
   };
-  
 
-  // Debugging: Check the value of user
-  useEffect(() => {
-    console.log("User from AuthContext:", user);
-  }, [user]);
+  // // Debugging: Check the value of user
+  // useEffect(() => {
+  //   console.log("User from AuthContext:", user);
+  // }, [user]);
 
   // Fetching world GeoJSON data
   useEffect(() => {

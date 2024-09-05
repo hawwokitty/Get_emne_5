@@ -1,4 +1,3 @@
-// Login.jsx
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext'; 
 
@@ -8,6 +7,7 @@ export default function Login() {
   const [message, setMessage] = useState('');
   const { login } = useAuth(); // Destructure the login function from the AuthContext
 
+   // Function to handle the login process
   const handleLogin = async () => {
     if (!email || !password) {
       setMessage('Please enter both email and password.');
@@ -26,7 +26,7 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        console.log("Login successful, user data:", data.user); // Debugging log
+        // console.log("Login successful, user data:", data.user); // Debugging log
         login(data.user); // Set the user data from the response
         window.location.href = '/map'; // Redirect to the map page
       } else {

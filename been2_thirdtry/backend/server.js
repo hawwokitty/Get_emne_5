@@ -29,7 +29,8 @@ sql.connect(dbConfig)
   })
   .catch((err) => console.error("Database connection failed", err));
 
-// Define routes
+// Define routes for Map page
+// GET users visited countries
 app.get("/api/users/:id/countries_visited", async (req, res) => {
   const { id } = req.params;
   try {
@@ -43,7 +44,7 @@ app.get("/api/users/:id/countries_visited", async (req, res) => {
   }
 });
 
-// POST endpoint
+// POST users visited country to database
 app.post("/api/users/:id/countries_visited", async (req, res) => {
   const { id } = req.params;
   const { country_id } = req.body;
@@ -58,7 +59,7 @@ app.post("/api/users/:id/countries_visited", async (req, res) => {
   }
 });
 
-// DELETE endpoint
+// DELETE users visited country from database
 app.delete("/api/users/:id/countries_visited", async (req, res) => {
   const { id } = req.params;
   const { country_id } = req.body;
@@ -91,8 +92,8 @@ app.post("/signup", async (req, res) => {
     const request = pool.request();
 
     // Define the input parameters
-    request.input("Email", sql.VarChar, email); // Adjust the size/type based on your database schema
-    request.input("Hash", sql.VarChar, hash);   // Adjust the size/type based on your database schema
+    request.input("Email", sql.VarChar, email); 
+    request.input("Hash", sql.VarChar, hash);  
 
     // Execute the query
     const result = await request.query(
@@ -105,8 +106,6 @@ app.post("/signup", async (req, res) => {
     res.status(500).json({ error: "Error adding user", err });
   }
 });
-
-
 
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
@@ -171,8 +170,6 @@ app.post("/login", async (req, res) => {
     res.status(500).json({ error: "Error during login process" });
   }
 });
-
-
 
 // Start the server
 const PORT = process.env.PORT || 5000;
