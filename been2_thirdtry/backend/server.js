@@ -79,6 +79,56 @@ app.delete("/api/users/:id/countries_visited", async (req, res) => {
   }
 });
 
+// routes for cities visited
+// GET users visited capitals
+app.get("/api/users/:id/capitals_visited", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await sql.query(
+      `SELECT * FROM capitals_visited WHERE user_id = ${id}`
+    );
+    res.json(result.recordset);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error retrieving visited capitals");
+  }
+});
+
+// POST users visited capital to database
+app.post("/api/users/:id/capitals_visited", async (req, res) => {
+  const { id } = req.params;
+  const { country_id, name } = req.body;
+  try {
+    const result = await sql.query(
+      `INSERT INTO capitals_visited (user_id, country_id, name) VALUES (${id}, ${country_id}, ${name})`
+    );
+    res.status(201).json({ message: "capital added to visited list" }); // Return JSON response
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error adding visited capital" }); // Return JSON response
+  }
+});
+
+// DELETE users visited capital from database
+app.delete("/api/users/:id/capitals_visited", async (req, res) => {
+  const { id } = req.params;
+  const { country_id } = req.body;
+  try {
+    const result = await sql.query(
+      `DELETE FROM capitals_visited WHERE user_id = ${id} AND country_id = ${country_id}`
+    );
+    
+    if (result.rowCount === 0) {
+      res.status(404).json({ error: "capital not found in visited list" }); // Return JSON response
+    } else {
+      res.status(200).json({ message: "capital removed from visited list" }); // Return JSON response
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error removing visited capital" }); // Return JSON response
+  }
+});
+
 // Signup and login with help from chat gpt <3
 
 app.post("/signup", async (req, res) => {
