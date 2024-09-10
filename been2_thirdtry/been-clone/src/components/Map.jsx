@@ -11,25 +11,23 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import * as lookup from "coordinate_to_country";
 import * as lookupName from "country-code-lookup";
-// const lookupCity = require('local-reverse-geocoder');
 import { useAuth } from "../context/AuthContext";
-// const cities = require('all-the-cities');
 
-// lookupCity.init({}, function () {});
+// Custom icon for the capital city marker
 const customIcon = L.icon({
   iconUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png", // Update to your custom icon path if needed
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png", 
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
 });
 
+// What happens when you click the map
 const MapEvents = ({ onCountryClick }) => {
   useMapEvents({
     click(e) {
       const { latlng } = e;
       const { lat, lng } = latlng;
-      // getCityNameFromCoordinates(lat, lng);
       const countryName = getCountryNameFromCoordinates(lat, lng);
       if (countryName) {
         onCountryClick(countryName);
@@ -48,16 +46,10 @@ const getCountryNameFromCoordinates = (lat, lng) => {
   }
 };
 
-// const getCityNameFromCoordinates = (lat, lng) => {
-//  const point = {latitude: lat, longitude: lng};
-//   const city = lookupCity.lookup(point);
-//   console.log(city.name);
-// }
-
-// Define the style function to apply red color to highlighted countries
+// Define the style function to apply color to highlighted countries
 function style(feature) {
   return {
-    fillColor: "#FFB6C1", // Red color
+    fillColor: "#FFB6C1", 
     weight: 2,
     opacity: 1,
     color: "#FFB6C1", // Border color
@@ -80,14 +72,10 @@ const Map = () => {
     window.location.href = "/login"; // Redirect to the login page or home page
   };
 
+  // Change the mode when you click the toggle button
   const handleToggleMode = () => {
     setIsToggled((prevMode) => !prevMode);
   };
-
-  // // Debugging: Check the value of user
-  // useEffect(() => {
-  //   console.log("User from AuthContext:", user);
-  // }, [user]);
 
   // Fetching world GeoJSON data
   useEffect(() => {
@@ -214,7 +202,6 @@ const Map = () => {
                   )
                 : null;
             return {
-              // id: capital.id,
               geojson: capitalGeoJson,
               name: capital.name,
               country: countryName,
@@ -249,7 +236,6 @@ const Map = () => {
     console.log(capitalGeoJson);
 
     const newCapital = {
-      // id: ????,
       geojson: capitalGeoJson,
       name: capitalGeoJson.properties.city,
       country: countryName,
@@ -260,11 +246,6 @@ const Map = () => {
     );
 
     const countryIso = lookupName.byCountry(countryName).isoNo;
-    // console.log(countryIso);
-    // console.log(Number(countryIso));
-    // console.log(newCapital.name);
-    console.log(visitedCapitalsPoints);
-
     const method = existingCapital ? "DELETE" : "POST";
     const action = existingCapital ? "deleting" : "adding";
 
