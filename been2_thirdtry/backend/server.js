@@ -97,10 +97,19 @@ app.get("/api/users/:id/capitals_visited", async (req, res) => {
 // POST users visited capital to database
 app.post("/api/users/:id/capitals_visited", async (req, res) => {
   const { id } = req.params;
-  const { country_id, name } = req.body;
+  const { country_id, cityName } = req.body;
   try {
-    const result = await sql.query(
-      `INSERT INTO capitals_visited (user_id, country_id, name) VALUES (${id}, ${country_id}, ${name})`
+    // Create a new SQL request
+    const request = new sql.Request();
+
+    // Set input parameters
+    request.input("UserId", sql.Int, id);
+    request.input("CountryId", sql.Int, country_id);
+    request.input("CityName", sql.VarChar, cityName);
+
+    // Use parameterized query to prevent SQL injection
+    const result = await request.query(
+      "INSERT INTO capitals_visited (user_id, country_id, name) VALUES (@UserId, @CountryId, @CityName)"
     );
     res.status(201).json({ message: "capital added to visited list" }); // Return JSON response
   } catch (err) {

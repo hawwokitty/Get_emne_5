@@ -1,13 +1,20 @@
 import { useEffect, useState, useCallback } from "react";
-import { MapContainer, TileLayer, GeoJSON, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, GeoJSON, useMapEvents, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import * as lookup from "coordinate_to_country";
 import * as lookupName from "country-code-lookup";
 // const lookupCity = require('local-reverse-geocoder');
-import { useAuth } from '../context/AuthContext'; 
+import { useAuth } from "../context/AuthContext";
 // const cities = require('all-the-cities');
 
 // lookupCity.init({}, function () {});
+const customIcon = L.icon({
+  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png", // Update to your custom icon path if needed
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+});
 
 const MapEvents = ({ onCountryClick }) => {
   useMapEvents({
@@ -43,14 +50,14 @@ const Map = () => {
   const [countryData, setCountryData] = useState(null);
   const [capitalData, setCapitalData] = useState(null);
   const [highlightedCountries, setHighlightedCountries] = useState([]);
-  const [VisitedCapitalsPoints, setVisitedCapitalsPoints] = useState([]);
+  const [visitedCapitalsPoints, setVisitedCapitalsPoints] = useState([]);
   const { user } = useAuth(); // Access the user data
   const { logout } = useAuth(); // Get the logout function from the context
   const [isToggled, setIsToggled] = useState(true);
 
   const handleLogout = () => {
     logout(); // Call the logout function to clear user data
-    window.location.href = '/login'; // Redirect to the login page or home page
+    window.location.href = "/login"; // Redirect to the login page or home page
   };
 
   const handleToggleMode = () => {
@@ -190,7 +197,7 @@ const Map = () => {
               // id: capital.id,
               geojson: capitalGeoJson,
               name: capital.name,
-              country: countryName
+              country: countryName,
             };
           });
           setVisitedCapitalsPoints(arrayOfVisitedCapitals);
@@ -219,31 +226,43 @@ const Map = () => {
             (feature) => feature.properties.country === countryName
           )
         : null;
-        console.log(capitalGeoJson);
-        
+    console.log(capitalGeoJson);
+
     const newCapital = {
       // id: ????,
       geojson: capitalGeoJson,
       name: capitalGeoJson.properties.city,
-      country: countryName
+      country: countryName,
     };
 
-    const existingCapital = VisitedCapitalsPoints.find(
+    const existingCapital = visitedCapitalsPoints.find(
       (capital) => capital.country === countryName
     );
 
-    const countryIso = lookupName.byCountry(countryName).iso3;
+    const countryIso = lookupName.byCountry(countryName).isoNo;
+    // console.log(countryIso);
+    // console.log(Number(countryIso));
+    // console.log(newCapital.name);
+    console.log(visitedCapitalsPoints);
+    
+
     const method = existingCapital ? "DELETE" : "POST";
     const action = existingCapital ? "deleting" : "adding";
 
-    console.log(`${action} ${capitalGeoJson.properties.city}  for user ID ${user.id}`);
+    console.log(
+      `${action} ${capitalGeoJson.properties.city}  for user ID ${user.id}`
+    );
 
     fetch(`http://localhost:3111/api/users/${user.id}/capitals_visited`, {
       method,
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ id: user.id, name: newCapital.city, country_id: countryIso}),
+      body: JSON.stringify({
+        id: user.id,
+        cityName: newCapital.name,
+        country_id: Number(countryIso),
+      }),
     })
       .then((response) => {
         if (!response.ok) {
@@ -260,24 +279,54 @@ const Map = () => {
       .catch((error) => console.error("Error:", error));
   };
 
-
   return (
     <>
-    <button onClick={handleLogout} className="btn btn-secondary">Logout
-    </button>
-    <button type="button" onClick={handleToggleMode} className="btn btn-primary">Click to toggle to {isToggled ? 'Capital City' : 'Country'} mode</button>
-      
-    <MapContainer center={[20, 0]} zoom={2} style={{ height: "100vh", width: "100vw" }}>
-      <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-        attribution='&copy; <a href="https://carto.com/">CartoDB</a> contributors'
-      />
-      <MapEvents onCountryClick={isToggled ? handleCountryClick : handleCapitalclick} />
-      {highlightedCountries.map((data) =>
-        data.geojson ? <GeoJSON key={data.id} data={data.geojson} /> : null
-      )}
-    </MapContainer>
+      <button onClick={handleLogout} className="btn btn-secondary">
+        Logout
+      </button>
+      <button
+        type="button"
+        onClick={handleToggleMode}
+        className="btn btn-primary"
+      >
+        Click to toggle to {isToggled ? "Capital City" : "Country"} mode
+      </button>
 
+      <MapContainer
+        center={[20, 0]}
+        zoom={2}
+        style={{ height: "100vh", width: "100vw" }}
+      >
+        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://carto.com/">CartoDB</a> contributors'
+        />
+        <MapEvents
+          onCountryClick={isToggled ? handleCountryClick : handleCapitalclick}
+        />
+        {highlightedCountries.map((data) =>
+          data.geojson ? <GeoJSON key={data.id} data={data.geojson} /> : null
+        )}
+        {visitedCapitalsPoints.map((point) => (
+          
+        <Marker
+          key={point.id}
+          position={[
+            point.geojson.geometry.coordinates[1], // Latitude
+            point.geojson.geometry.coordinates[0], // Longitude
+          ]}
+          icon={customIcon}
+        >
+          <Popup>
+            <strong>{point.geojson.properties.city}, {point.geojson.properties.country}</strong>
+            <br />
+            ISO2: {point.geojson.properties.iso2}
+            <br />
+            ISO3: {point.geojson.properties.iso3}
+          </Popup>
+        </Marker>
+      ))}
+      </MapContainer>
     </>
   );
 };
