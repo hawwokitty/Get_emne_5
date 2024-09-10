@@ -1,5 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
-import { MapContainer, TileLayer, GeoJSON, useMapEvents, Marker, Popup } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  GeoJSON,
+  useMapEvents,
+  Marker,
+  Popup,
+} from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import * as lookup from "coordinate_to_country";
@@ -10,7 +17,8 @@ import { useAuth } from "../context/AuthContext";
 
 // lookupCity.init({}, function () {});
 const customIcon = L.icon({
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png", // Update to your custom icon path if needed
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png", // Update to your custom icon path if needed
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
@@ -45,6 +53,18 @@ const getCountryNameFromCoordinates = (lat, lng) => {
 //   const city = lookupCity.lookup(point);
 //   console.log(city.name);
 // }
+
+// Define the style function to apply red color to highlighted countries
+function style(feature) {
+  return {
+    fillColor: "#FFB6C1", // Red color
+    weight: 2,
+    opacity: 1,
+    color: "#FFB6C1", // Border color
+    // dashArray: "3",
+    fillOpacity: 0.5,
+  };
+}
 
 const Map = () => {
   const [countryData, setCountryData] = useState(null);
@@ -244,7 +264,6 @@ const Map = () => {
     // console.log(Number(countryIso));
     // console.log(newCapital.name);
     console.log(visitedCapitalsPoints);
-    
 
     const method = existingCapital ? "DELETE" : "POST";
     const action = existingCapital ? "deleting" : "adding";
@@ -305,27 +324,31 @@ const Map = () => {
           onCountryClick={isToggled ? handleCountryClick : handleCapitalclick}
         />
         {highlightedCountries.map((data) =>
-          data.geojson ? <GeoJSON key={data.id} data={data.geojson} /> : null
+          data.geojson ? <GeoJSON key={data.id} data={data.geojson} style={style}/> : null
         )}
-        {visitedCapitalsPoints.map((point) => (
-          
-        <Marker
-          key={point.id}
-          position={[
-            point.geojson.geometry.coordinates[1], // Latitude
-            point.geojson.geometry.coordinates[0], // Longitude
-          ]}
-          icon={customIcon}
-        >
-          <Popup>
-            <strong>{point.geojson.properties.city}, {point.geojson.properties.country}</strong>
-            <br />
-            ISO2: {point.geojson.properties.iso2}
-            <br />
-            ISO3: {point.geojson.properties.iso3}
-          </Popup>
-        </Marker>
-      ))}
+        {visitedCapitalsPoints.map((point) =>
+          point.geojson ? (
+            <Marker
+              key={point.id}
+              position={[
+                point.geojson.geometry.coordinates[1], // Latitude
+                point.geojson.geometry.coordinates[0], // Longitude
+              ]}
+              icon={customIcon}
+            >
+              <Popup>
+                <strong>
+                  {point.geojson.properties.city},{" "}
+                  {point.geojson.properties.country}
+                </strong>
+                <br />
+                ISO2: {point.geojson.properties.iso2}
+                <br />
+                ISO3: {point.geojson.properties.iso3}
+              </Popup>
+            </Marker>
+          ) : null
+        )}
       </MapContainer>
     </>
   );
